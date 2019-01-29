@@ -11,7 +11,7 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N, batch_size_tr, batch_size_te, epochs, n_f, n_n, alpha = 10, 2000, 500, 500, 10, 100, 1.01
+N, batch_size_tr, batch_size_te, epochs, n_f, n_n, alpha = 10, 2000, 200, 250, 10, 150, 1.01
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 activation_func = [nn.Sigmoid(), nn.Tanh(), nn.ReLU(),
@@ -46,4 +46,4 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-#    np.savez_compressed('/root/output/Activation_function_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)
+    np.savez_compressed('/root/output/Activation_function_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)

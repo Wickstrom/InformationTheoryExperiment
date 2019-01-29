@@ -156,6 +156,7 @@ class CNN5L(nn.Module):
 
             data = self.forward(batch_x)
             data.reverse()
+            data[-1] = self.softmax(data[-1])
             data.insert(0, batch_x)
             data.append(self.one_hot(batch_y, gpu))
 

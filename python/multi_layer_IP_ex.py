@@ -13,7 +13,7 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N, batch_size_tr, batch_size_te, epochs, n_f, n_n, alpha = 2, 100, 50, 20, 10, 10, 1.01
+N, batch_size_tr, batch_size_te, epochs, n_f, n_n, alpha = 10, 2000, 200, 250, 10, 150, 1.01
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 a_func = nn.ReLU()

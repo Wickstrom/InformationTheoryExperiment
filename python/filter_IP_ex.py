@@ -11,14 +11,13 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N, batch_size_tr, batch_size_te, epochs, n_n, alpha = 10, 2000, 500, 500, 100, 1.01
+N, batch_size_tr, batch_size_te, epochs, n_n, alpha = 10, 2000, 200, 250, 150, 1.01
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 a_func = nn.ReLU()
 N_F = [3, 5, 10, 50]
 
-x_tr, y_tr, x_te, y_te = load_mnist( path, 'full')
-
+x_tr, y_tr, x_te, y_te = load_mnist(path, 'full')
 
 
 for n in range(N):
