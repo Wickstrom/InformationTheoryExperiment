@@ -21,12 +21,6 @@ models = [CNN4L, CNN5L, CNN6L]
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, 'full')
 
-x_tr = x_tr[:100]
-y_tr = y_tr[:100]
-
-x_te = x_te[:100]
-x_te = x_te[:100]
-
 
 for n in range(N):
     temp_cost, temp_score, temp_mi = [], [], []
@@ -53,4 +47,4 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/home/kristoffer/multi_layer_IP_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)
+    np.savez_compressed('/root/output/multi_layer_IP_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)

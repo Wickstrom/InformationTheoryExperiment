@@ -166,8 +166,8 @@ class CNN5L(nn.Module):
             j_TY =  [self.j_entropy(k_i, k_list[-1], n_n, alpha) for k_i in k_list[1:-1]]
 
             for idx, val in enumerate(e_list[1:-1]):
-                MI_temp.append([e_list[0].data.numpy()+val.data.numpy()-j_XT[idx].data.numpy(),
-                           e_list[-1].data.numpy()+val.data.numpy()-j_TY[idx].data.numpy()])
+                MI_temp.append([e_list[0].cpu().data.numpy()+val.cpu().data.numpy()-j_XT[idx].cpu().data.numpy(),
+                           e_list[-1].cpu().data.numpy()+val.cpu().data.numpy()-j_TY[idx].cpu().data.numpy()])
             MI.append(MI_temp)
         return np.array(MI).mean(0)
 
