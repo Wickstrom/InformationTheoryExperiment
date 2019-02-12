@@ -11,7 +11,14 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N, batch_size_tr, batch_size_te, epochs, n_n, alpha = 10, 2000, 200, 250, 150, 1.01
+N = 10
+batch_size_tr = 2000
+batch_size_te = 200
+epochs = 200
+n_n = 50
+alpha = 1.01
+number_neurons = 50
+
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 a_func = nn.ReLU()
@@ -22,21 +29,27 @@ x_tr, y_tr, x_te, y_te = load_mnist(path, 'full')
 
 for n in range(N):
     temp_cost, temp_score, temp_mi = [], [], []
-    for n_f in N_F:
+    for number_filters in N_F:
 
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = CNN5L(n_f, a_func).cuda()
+            model = CNN5L(number_filters, number_neurons, a_func).cuda()
         else:
-            model = CNN5L(n_f, a_func)
+            model = CNN5L(number_filters, number_neurons, a_func)
 
         for epoch in range(epochs):
-            cost.append(model.train_model(x_tr, y_tr, model, batch_size_tr, gpu))
-            print('Run Number: {}'.format(n), 'Number of filter is: {}'.format(n_f), 'Epoch number {}'.format(epoch), cost[-1])
+            cost.append(model.train_model(x_tr, y_tr, model,
+                                          batch_size_tr, gpu))
+            print('Run Number: {}'.format(n), '\n',
+                  'Number of filter is: {}'.format(number_filters), '\n',
+                  'Epoch number: {}'.format(epoch), '\n',
+                  'Cost: {}'.format(cost[-1]))
             with th.no_grad():
-                mi_sample.append(model.compute_mi(x_te, y_te, n_n, alpha, batch_size_te, model, gpu))
-        
+                mi_sample.append(model.compute_mi(x_te, y_te, n_n,
+                                                  alpha, batch_size_te,
+                                                  model, gpu))
+
         temp_cost.append(cost)
         temp_mi.append(mi_sample)
 
@@ -45,4 +58,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/filter_IP_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)
+    np.savez_compressed('/root/output/filter_IP_ex_results_50j.npz',
+                        a=mi_list, b=all_costs, c=all_scores)

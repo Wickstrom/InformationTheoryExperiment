@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -L )"
+parent_dir="$( cd "${script_dir}/.." && pwd -L )"
+
+# Use convention-based image tags.
+image_tag="${USER}:$( basename "${parent_dir}" )"
+
+# Use parent directory as build context, and forward args.
+docker build --tag="${image_tag}" $@ "${parent_dir}"

@@ -11,14 +11,21 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N, batch_size_tr, batch_size_te, epochs, n_f, n_n, alpha = 10, 2000, 200, 250, 10, 150, 1.01
+N = 10
+batch_size_tr = 2000
+batch_size_te = 200
+epochs = 200
+n_n = 50
+number_filters = 10
+number_neurons = 50
+alpha = 1.01
+
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 activation_func = [nn.Sigmoid(), nn.Tanh(), nn.ReLU(),
                    nn.LeakyReLU(), nn.PReLU(), nn.ELU()]
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, 'full')
-
 
 for n in range(N):
 
@@ -28,16 +35,22 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = CNN4L(n_f, a_func).cuda()
+            model = CNN4L(number_filters, number_neurons, a_func).cuda()
         else:
-            model = CNN4L(n_f, a_func)
+            model = CNN4L(number_filters, number_neurons, a_func)
 
         for epoch in range(epochs):
-            cost.append(model.train_model(x_tr, y_tr, model, batch_size_tr, gpu))
-            print('Run Number: {}'.format(n), 'Activation function is: {}'.format(a_func), 'Epoch number {}'.format(epoch), cost[-1])
+            cost.append(model.train_model(x_tr, y_tr, model,
+                                          batch_size_tr, gpu))
+            print('Run Number: {}'.format(n), '\n',
+                  'Activation function is: {}'.format(a_func), '\n',
+                  'Epoch number: {}'.format(epoch), '\n',
+                  'Cost: {}'.format(cost[-1]))
             with th.no_grad():
-                mi_sample.append(model.compute_mi(x_te, y_te, n_n, alpha, batch_size_te, model, gpu))
-        
+                mi_sample.append(model.compute_mi(x_te, y_te, n_n,
+                                                  alpha, batch_size_te,
+                                                  model, gpu))
+
         temp_cost.append(cost)
         temp_mi.append(mi_sample)
 
@@ -46,4 +59,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/Activation_function_ex_results.npz', a=mi_list, b=all_costs, c=all_scores)
+    np.savez_compressed('/root/output/Activation_function_ex_results_50j.npz',
+                        a=mi_list, b=all_costs, c=all_scores)

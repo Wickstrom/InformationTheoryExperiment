@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -L )"
+parent_dir="$( cd "${script_dir}/.." && pwd -L )"
+
+# Use convention-based image tags.
+image_tag="${USER}:$( basename "${parent_dir}" )"
+
+# Assign GPUs based on 'gpu_users' file.
+gpu_users_file="/var/springfield/gpu_users"
+gpu_devices="$( sed -nr "s/$USER (.*)/\1/p" "${gpu_users_file}" )"
+
+docker run \
+  --rm \
+  --interactive \
+  --tty \
+  --env="CUDA_VISIBLE_DEVICES=${gpu_devices:-}" \
+  --volume="${PWD}/data:/root/data:ro" \
+  --volume="${PWD}/output:/root/output" \
+  --volume="${PWD}/python:/root/python" \
+  "${image_tag}" \
+  python3 $@
