@@ -18,13 +18,8 @@ class Network():
 
         for batch in batches:
             optimizer.zero_grad()
-            if gpu:
-                batch_x = Variable(th.from_numpy(x[batch]).float()).cuda()
-                batch_y = Variable(th.from_numpy(y[batch]).long()).cuda()
-            else:
-                batch_x = Variable(th.from_numpy(x[batch]).float())
-                batch_y = Variable(th.from_numpy(y[batch]).long())
-
+            batch_x = x[batch]
+            batch_y = y[batch]
             output = model(batch_x)
             loss = criterion(output[0], batch_y)
             loss.backward()
@@ -39,12 +34,9 @@ class Network():
         batches = self.make_batches(x.shape[0], batch_size)
 
         for batch in batches:
-            if gpu:
-                batch_x = th.from_numpy(x[batch]).float().cuda()
-                batch_y = th.from_numpy(y[batch]).long().cuda()
-            else:
-                batch_x = th.from_numpy(x[batch]).float()
-                batch_y = th.from_numpy(y[batch]).long()
+            
+            batch_x = x[batch]
+            batch_y = y[batch]
 
             output = model(batch_x)
             y_hat = th.argmax(self.softmax(output[0]), 1)
@@ -107,12 +99,9 @@ class Network():
 
         for idx, batch in enumerate(batches):
             MI_temp = []
-            if gpu:
-                batch_x = th.from_numpy(x[batch]).float().cuda()
-                batch_y = th.from_numpy(y[batch]).long().cuda()
-            else:
-                batch_x = th.from_numpy(x[batch]).float()
-                batch_y = th.from_numpy(y[batch]).long()
+            
+            batch_x = x[batch]
+            batch_y = y[batch]
 
             data = self.forward(batch_x)
             data.reverse()
