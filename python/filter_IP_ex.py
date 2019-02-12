@@ -61,3 +61,4 @@ with th.autograd.profiler.profile() as pf:
         all_scores.append(temp_score)
 #        np.savez_compressed('/root/output/filter_IP_ex_results_50j.npz',
 #                            a=mi_list, b=all_costs, c=all_scores)
+print(pf)
