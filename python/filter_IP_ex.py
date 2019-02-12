@@ -14,7 +14,7 @@ else:
 N = 10
 batch_size_tr = 32
 batch_size_te = 100
-epochs = 2
+epochs = 200
 n_n = 12
 alpha = 1.01
 number_neurons = 50
