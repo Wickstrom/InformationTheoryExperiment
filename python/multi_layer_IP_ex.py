@@ -8,7 +8,7 @@ from load_mnist import load_mnist
 
 gpu = th.cuda.is_available()
 if gpu:
-    th.cuda.set_device(1)
+    th.cuda.set_device(0)
     path = '/root/data/'
 else:
     path = '/home/kristoffer/data/mnist/'
