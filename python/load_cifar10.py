@@ -49,6 +49,6 @@ def load_cifar10(path, gpu):
         x_te = data_te[b'data']
         x_te = th.from_numpy(x_te.reshape(10000, 3, 32, 32)).float()
 
-        y_te = th.from_numpy(np.array(data_te[b'labels'])).long()       
+        y_te = th.from_numpy(np.array(data_te[b'labels'])).long()
 
     return x_tr, y_tr, x_te, y_te

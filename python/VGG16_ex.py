@@ -21,7 +21,7 @@ alpha = 1.01
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 
-x_tr, y_tr, x_te, y_te = load_cifar10(path)
+x_tr, y_tr, x_te, y_te = load_cifar10(path, gpu)
 
 for n in range(N):
 
