@@ -12,10 +12,10 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 2000
-batch_size_te = 200
+batch_size_tr = 50
+batch_size_te = 100
 epochs = 200
-n_n = 50
+n_n = 75
 number_filters = 10
 number_neurons = 50
 alpha = 1.01

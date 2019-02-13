@@ -12,10 +12,10 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 32
+batch_size_tr = 50
 batch_size_te = 100
-epochs = 200
-n_n = 12
+epochs = 150
+n_n = 75
 alpha = 1.01
 number_neurons = 50
 
@@ -57,5 +57,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/filter_IP_ex_results_10j.npz',
+    np.savez_compressed('/root/output/filter_IP_ex_results_75j.npz',
                         a=mi_list, b=all_costs, c=all_scores)
