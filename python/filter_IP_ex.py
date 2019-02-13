@@ -22,7 +22,7 @@ number_neurons = 50
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 a_func = nn.ReLU()
-N_F = [3, 5, 10, 50]
+N_F = [5, 10, 50, 100]
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
