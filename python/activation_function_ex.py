@@ -12,7 +12,7 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 50
+batch_size_tr = 500
 batch_size_te = 200
 epochs = 200
 n_n = 50
