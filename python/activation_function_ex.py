@@ -13,9 +13,9 @@ else:
 
 N = 10
 batch_size_tr = 50
-batch_size_te = 100
+batch_size_te = 200
 epochs = 200
-n_n = 75
+n_n = 50
 number_filters = 10
 number_neurons = 50
 alpha = 1.01
@@ -59,5 +59,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/Activation_function_ex_results_75j.npz',
+    np.savez_compressed('/root/output/Activation_function_ex_results_50j.npz',
                         a=mi_list, b=all_costs, c=all_scores)

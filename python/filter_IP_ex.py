@@ -13,7 +13,7 @@ else:
 
 N = 10
 batch_size_tr = 50
-batch_size_te = 100
+batch_size_te = 200
 epochs = 150
 n_n = 75
 alpha = 1.01
