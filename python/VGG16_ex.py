@@ -13,9 +13,9 @@ else:
 
 N = 10
 batch_size_tr = 50
-batch_size_te = 200
+batch_size_te = 100
 epochs = 200
-n_n = 100
+n_n = 60
 alpha = 1.01
 
 all_costs, all_scores, mi_list = [], [], []
@@ -46,5 +46,5 @@ for n in range(N):
     all_costs.append(cost)
     mi_list.append(mi_sample)
     all_scores.append(model.predict(x_te, y_te, model, batch_size_te, gpu))
-    np.savez_compressed('/root/output/VGG16_ex_results_100.npz',
+    np.savez_compressed('/root/output/VGG16_ex_results_60.npz',
                         a=mi_list, b=all_costs, c=all_scores)
