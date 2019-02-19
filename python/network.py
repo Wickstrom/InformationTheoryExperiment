@@ -34,13 +34,14 @@ class Network():
         batches = self.make_batches(x.shape[0], batch_size)
 
         for batch in batches:
-            
+
             batch_x = x[batch]
             batch_y = y[batch]
 
             output = model(batch_x)
             y_hat = th.argmax(self.softmax(output[0]), 1)
-            scores.append(th.eq(batch_y, y_hat).sum().cpu().data.numpy() / batch_x.shape[0])
+            scores.append(th.eq(batch_y, y_hat).sum().cpu().data.numpy() /
+                          batch_x.shape[0])
 
         return scores
 
@@ -51,32 +52,24 @@ class Network():
         except TypeError:
             x = x
 
+        if len(x.size()) == 4:
+            x = x.view(x.size()[0], -1)
+
         dist = th.norm(x[:, None] - x, dim=2, p=2)
         return dist
 
-    def calc_kernel(self, x, n_n, sigma=None):
-
-        k = self.dist_mat(x)
-
-        if sigma is None:
-            sigma = th.sort(k)[0][:, n_n].mean()
-        else:
-            sigma = sigma
-        k = th.exp(-k ** 2 / sigma ** 2)
-
-        return k / th.trace(k)
-
     def kernel_mat(self, x, n_n, sigma=None):
 
-        try:
-            x = th.from_numpy(x)
-        except TypeError:
-            x = x
-        if len(x.shape) == 2:
-            return self.calc_kernel(x, n_n, sigma=sigma)
+        d = self.dist_mat(x)
+
+        if sigma is None:
+            sigma = th.sort(d)[0][:, n_n].mean()
         else:
-            x = x.view(x.size(0), -1)
-            return self.calc_kernel(x, n_n, sigma=sigma)
+            sigma = sigma
+
+        k = th.exp(-d ** 2 / sigma ** 2)
+
+        return k / th.trace(k)
 
     def entropy(self, x, n_n, alpha, sigma=None):
 
@@ -110,13 +103,17 @@ class Network():
             data.append(self.one_hot(batch_y, gpu))
 
             k_list = [self.kernel_mat(i, n_n) for i in data]
-            e_list = [self.entropy(i, n_n, alpha, sigma) for i in k_list]
-            j_XT =  [self.j_entropy(k_list[0], k_i, n_n, alpha) for k_i in k_list[1:-1]]
-            j_TY =  [self.j_entropy(k_i, k_list[-1], n_n, alpha) for k_i in k_list[1:-1]]
+            e_list = [self.entropy(i) for i in k_list]
+            j_XT = [self.j_entropy(k_list[0], k_i) for k_i in k_list[1:-1]]
+            j_TY = [self.j_entropy(k_i, k_list[-1]) for k_i in k_list[1:-1]]
 
             for idx, val in enumerate(e_list[1:-1]):
-                MI_temp.append([e_list[0].cpu().data.numpy()+val.cpu().data.numpy()-j_XT[idx].cpu().data.numpy(),
-                           e_list[-1].cpu().data.numpy()+val.cpu().data.numpy()-j_TY[idx].cpu().data.numpy()])
+                MI_temp.append([e_list[0].cpu().data.numpy() +
+                                val.cpu().data.numpy() -
+                                j_XT[idx].cpu().data.numpy(),
+                                e_list[-1].cpu().data.numpy() +
+                                val.cpu().data.numpy() -
+                                j_TY[idx].cpu().data.numpy()])
             MI.append(MI_temp)
         return np.array(MI).mean(0)
 
