@@ -7,7 +7,7 @@ from load_cifar100 import load_cifar100
 gpu = th.cuda.is_available()
 if gpu:
     th.cuda.set_device(0)
-    path = '/root/data/cifar100/'
+    path = '/root/data/cifar-100-python/'
 else:
     path = '/home/kristoffer/data/cifar-100-python/'
 
