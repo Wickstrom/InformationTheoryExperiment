@@ -3,7 +3,7 @@ from network import Network
 
 
 class VGG16(nn.Module, Network):
-    def __init__(self, activation):
+    def __init__(self, n_c, activation):
         super(VGG16, self).__init__()
 
         # First encoder
@@ -77,7 +77,7 @@ class VGG16(nn.Module, Network):
                 nn.Linear(4096, 4096),
                 activation]))
         self.classifier = nn.Sequential(*([
-                nn.Linear(4096, 10)]))
+                nn.Linear(4096, n_c)]))
 
         self.pool = nn.MaxPool2d(2, 2)
         self.softmax = nn.Softmax(dim=1)

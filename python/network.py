@@ -99,7 +99,7 @@ class Network():
 
         for idx, batch in enumerate(batches):
             MI_temp = []
-            
+
             batch_x = x[batch]
             batch_y = y[batch]
 
