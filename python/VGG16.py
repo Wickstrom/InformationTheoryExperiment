@@ -66,7 +66,7 @@ class VGG16(nn.Module, Network):
                 *([nn.Conv2d(512, 512, kernel_size=3, padding=1),
                    nn.BatchNorm2d(512),
                    activation]))
-    
+
         # Classifier
         self.fc1 = nn.Sequential(*([
                 nn.Dropout(),

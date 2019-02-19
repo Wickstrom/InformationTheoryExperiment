@@ -15,8 +15,7 @@ N = 10
 batch_size_tr = 500
 batch_size_te = 100
 epochs = 150
-n_n = 75
-alpha = 1.01
+n_n = 25
 number_neurons = 50
 
 all_costs, all_scores, mi_list = [], [], []
@@ -45,8 +44,8 @@ for n in range(N):
                   'Epoch number: {}'.format(epoch), '\n',
                   'Cost: {}'.format(cost[-1]))
             with th.no_grad():
-                mi_sample.append(model.compute_mi(x_te, y_te, n_n,
-                                                  alpha, batch_size_te,
+                mi_sample.append(model.compute_mi(x_te, y_te, n_n, 
+                                                  batch_size_te,
                                                   model, gpu))
 
         temp_cost.append(cost)
@@ -57,5 +56,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/filter_IP_ex_results_75j.npz',
+    np.savez_compressed('/root/output/filter_results_25.npz',
                         a=mi_list, b=all_costs, c=all_scores)

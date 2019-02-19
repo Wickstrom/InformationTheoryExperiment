@@ -58,33 +58,31 @@ class Network():
         dist = th.norm(x[:, None] - x, dim=2, p=2)
         return dist
 
-    def kernel_mat(self, x, n_n, sigma=None):
+    def kernel_mat(self, x, n_n):
 
         d = self.dist_mat(x)
-
-        if sigma is None:
-            sigma = th.sort(d)[0][:, n_n].mean()
-        else:
-            sigma = sigma
+        sigma = th.sort(d)[0][:, n_n].mean()
 
         k = th.exp(-d ** 2 / sigma ** 2)
 
         return k / th.trace(k)
 
-    def entropy(self, x, n_n, alpha, sigma=None):
+    def entropy(self, x):
 
+        alpha = 1.01
         eigv = th.abs(th.symeig(x)[0])
         eig_pow = eigv**alpha
         return (1/(1-alpha))*th.log2(eig_pow.sum())
 
-    def j_entropy(self, x, y, n_n, alpha, sigma=None):
+    def j_entropy(self, x, y):
 
+        alpha = 1.01
         k = x*y / (th.trace(x*y))
         eigv = th.abs(th.symeig(k)[0])
         eig_pow = eigv**alpha
         return (1/(1-alpha))*th.log2(eig_pow.sum())
 
-    def compute_mi(self, x, y, n_n, alpha, batch_size, model, gpu, sigma=None):
+    def compute_mi(self, x, y, n_n, batch_size, model, gpu):
 
         model.eval()
         batches = list(self.make_batches(x.shape[0], batch_size))

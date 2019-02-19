@@ -16,7 +16,6 @@ batch_size_tr = 500
 batch_size_te = 100
 epochs = 200
 n_n = 25
-alpha = 1.01
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -40,7 +39,7 @@ for n in range(N):
               'Cost: {}'.format(cost[-1]))
         with th.no_grad():
             mi_sample.append(model.compute_mi(x_te, y_te, n_n,
-                                              alpha, batch_size_te,
+                                              batch_size_te,
                                               model, gpu))
 
     all_costs.append(cost)

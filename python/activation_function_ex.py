@@ -1,4 +1,4 @@
-import torch as th
+#import torch as th
 import numpy as np
 import torch.nn as nn
 from CNN_4L import CNN4L
@@ -15,10 +15,9 @@ N = 10
 batch_size_tr = 500
 batch_size_te = 200
 epochs = 200
-n_n = 50
+n_n = 25
 number_filters = 10
 number_neurons = 50
-alpha = 1.01
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -48,7 +47,7 @@ for n in range(N):
                   'Cost: {}'.format(cost[-1]))
             with th.no_grad():
                 mi_sample.append(model.compute_mi(x_te, y_te, n_n,
-                                                  alpha, batch_size_te,
+                                                  batch_size_te,
                                                   model, gpu))
 
         temp_cost.append(cost)
@@ -59,5 +58,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/Activation_function_ex_results_50j.npz',
+    np.savez_compressed('/root/output/activation_results_25.npz',
                         a=mi_list, b=all_costs, c=all_scores)
