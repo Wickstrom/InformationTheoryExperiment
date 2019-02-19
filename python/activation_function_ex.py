@@ -1,4 +1,4 @@
-#import torch as th
+import torch as th
 import numpy as np
 import torch.nn as nn
 from CNN_4L import CNN4L
