@@ -2,7 +2,7 @@ import torch as th
 import numpy as np
 import torch.nn as nn
 from load_mnist import load_mnist
-from FC_Hero import FC_Hero
+from CNN_Hero import CNN_Hero
 
 gpu = th.cuda.is_available()
 if gpu:
@@ -15,7 +15,7 @@ N = 10
 batch_size_tr = 250
 batch_size_te = 100
 epochs = 150
-n_n = 40
+n_n = 20
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -25,6 +25,12 @@ a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
+x_tr = x_tr[:100]
+y_tr = y_tr[:100]
+
+x_te = x_te[:100]
+y_te = y_te[:100]
+
 for n in range(N):
 
     temp_cost, temp_score, temp_mi = [], [], []
@@ -33,9 +39,9 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func, a_type[a_idx]).cuda()
+            model = CNN_Hero(a_func, a_type[a_idx]).cuda()
         else:
-            model = FC_Hero(a_func, a_type[a_idx])
+            model = CNN_Hero(a_func, a_type[a_idx])
 
         for epoch in range(epochs):
             cost.append(model.train_model(x_tr, y_tr, model,
@@ -48,15 +54,14 @@ for n in range(N):
                 mi_sample.append(model.compute_mi(x_te, y_te, n_n,
                                                   batch_size_te,
                                                   model, gpu))
-                score.append(model.predict(x_te, y_te, model,
-                                           batch_size_te, gpu))
 
         temp_cost.append(cost)
-        temp_score.append(score)
         temp_mi.append(mi_sample)
+
+        temp_score.append(model.predict(x_te, y_te, model, batch_size_te, gpu))
 
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/activation_results_40.npz',
+    np.savez_compressed('/root/output/cnn_hero_results_20.npz',
                         a=mi_list, b=all_costs, c=all_scores)

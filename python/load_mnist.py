@@ -8,17 +8,18 @@ def load_mnist(path, gpu):
 
     if gpu:
 
-        x_tr = th.from_numpy(data['a'].reshape(60000, 1, 28, 28) / 255).float().cuda()
+        x_tr = th.from_numpy(data['a'].reshape(60000, 1, 28, 28)).float().cuda() / 255
         y_tr = th.from_numpy(data['b']).long().cuda()
 
-        x_te = th.from_numpy(data['c'].reshape(10000, 1, 28, 28) / 255).float().cuda()
+        x_te = th.from_numpy(data['c'].reshape(10000, 1, 28, 28)).float().cuda() / 255
         y_te = th.from_numpy(data['d']).long().cuda()
 
     else:
 
-        x_tr = th.from_numpy(data['a'].reshape(60000, 1, 28, 28) / 255).float()
+        x_tr = th.from_numpy(data['a'].reshape(60000, 1, 28, 28)).float() / 255
         y_tr = th.from_numpy(data['b']).long()
-        x_te = th.from_numpy(data['c'].reshape(10000, 1, 28, 28) / 255).float()
+
+        x_te = th.from_numpy(data['c'].reshape(10000, 1, 28, 28)).float() / 255
         y_te = th.from_numpy(data['d']).long()
 
     return x_tr, y_tr, x_te, y_te

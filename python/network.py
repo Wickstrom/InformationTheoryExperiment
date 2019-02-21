@@ -3,8 +3,6 @@ import torch as th
 import numpy as np
 import torch.nn as nn
 import torch.nn.init as init
-from torch.autograd import Variable
-
 
 
 class Network():
@@ -27,6 +25,7 @@ class Network():
             loss.backward()
             optimizer.step()
             cost.append(np.float32(loss.cpu().data))
+
         return np.mean(cost)
 
     def predict(self, x, y, model, batch_size, gpu):
@@ -64,7 +63,6 @@ class Network():
 
         d = self.dist_mat(x)
         sigma = th.sort(d)[0][:, n_n].mean()
-
         k = th.exp(-d ** 2 / sigma ** 2)
 
         return k / th.trace(k)
@@ -161,4 +159,3 @@ class Network():
             else:
                 raise
                 return NotImplemented
-
