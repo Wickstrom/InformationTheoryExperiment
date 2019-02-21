@@ -41,19 +41,23 @@ for n in range(N):
         for epoch in range(epochs):
             cost.append(model.train_model(x_tr, y_tr, model,
                                           batch_size_tr, gpu))
-            print('Run Number: {}'.format(n), '\n',
-                  'Activation function is: {}'.format(a_type[a_idx]), '\n',
-                  'Epoch number: {}'.format(epoch), '\n',
-                  'Cost: {}'.format(cost[-1]))
+
             with th.no_grad():
                 mi_sample.append(model.compute_mi(x_te, y_te, n_n,
                                                   batch_size_te,
                                                   model, gpu))
+                score.append(model.predict(x_te, y_te, model,
+                                           batch_size_te, gpu))
+
+            print('Run Number: {}'.format(n), '\n',
+                  'Activation function is: {}'.format(a_type[a_idx]), '\n',
+                  'Epoch number: {}'.format(epoch), '\n',
+                  'Cost: {}'.format(cost[-1]), '\n',
+                  'Acc: {}'.format(score[-1]))
 
         temp_cost.append(cost)
         temp_mi.append(mi_sample)
-
-        temp_score.append(model.predict(x_te, y_te, model, batch_size_te, gpu))
+        temp_score.append(score)
 
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
