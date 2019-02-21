@@ -2,7 +2,9 @@ import random
 import torch as th
 import numpy as np
 import torch.nn as nn
+import torch.nn.init as init
 from torch.autograd import Variable
+
 
 
 class Network():
@@ -139,3 +141,24 @@ class Network():
 
         for i in range(0, N, batch_size):
             yield idx[i:i+batch_size]
+
+    def weight_init(self, m):
+        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+            if self.a_type == 'relu':
+                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'leaky_relu':
+                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'tanh':
+                g = init.calculate_gain(self.a_type)
+                init.xavier_normal_(m.weight.data, gain=g)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'sigmoid':
+                g = init.calculate_gain(self.a_type)
+                init.xavier_normal_(m.weight.data, gain=g)
+                init.constant_(m.bias.data, 0)
+            else:
+                raise
+                return NotImplemented
+

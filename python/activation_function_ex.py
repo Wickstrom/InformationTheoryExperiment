@@ -1,8 +1,8 @@
 import torch as th
 import numpy as np
 import torch.nn as nn
-from CNN_4L import CNN4L
 from load_mnist import load_mnist
+from FC_Hero import FC_Hero
 
 gpu = th.cuda.is_available()
 if gpu:
@@ -12,37 +12,36 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 500
-batch_size_te = 200
-epochs = 200
-n_n = 25
-number_filters = 10
-number_neurons = 50
+batch_size_tr = 250
+batch_size_te = 100
+epochs = 300
+n_n = 20
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 activation_func = [nn.Sigmoid(), nn.Tanh(), nn.ReLU(),
-                   nn.LeakyReLU(), nn.PReLU(), nn.ELU()]
+                   nn.LeakyReLU()]
+a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
-x_tr, y_tr, x_te, y_te = load_mnist(path, 'full')
+x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
 for n in range(N):
 
     temp_cost, temp_score, temp_mi = [], [], []
-    for a_func in activation_func:
+    for a_idx, a_func in enumerate(activation_func):
 
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = CNN4L(number_filters, number_neurons, a_func).cuda()
+            model = FC_Hero(a_func, a_type[a_idx]).cuda()
         else:
-            model = CNN4L(number_filters, number_neurons, a_func)
+            model = FC_Hero(a_func, a_type[a_idx])
 
         for epoch in range(epochs):
             cost.append(model.train_model(x_tr, y_tr, model,
                                           batch_size_tr, gpu))
             print('Run Number: {}'.format(n), '\n',
-                  'Activation function is: {}'.format(a_func), '\n',
+                  'Activation function is: {}'.format(a_type[a_idx]), '\n',
                   'Epoch number: {}'.format(epoch), '\n',
                   'Cost: {}'.format(cost[-1]))
             with th.no_grad():
@@ -58,5 +57,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/activation_results_25.npz',
+    np.savez_compressed('/root/output/activation_results_20.npz',
                         a=mi_list, b=all_costs, c=all_scores)
