@@ -12,8 +12,8 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 600
-batch_size_te = 100
+batch_size_tr = 1200
+batch_size_te = 200
 epochs = 150
 n_n = 20
 
@@ -40,7 +40,7 @@ for n in range(N):
         for epoch in range(epochs):
 
             batches_tr = list(model.make_batches(x_tr.shape[0], batch_size_tr))
-            batches_te = list(model.make_batches(x_te.shape[0], batch_size_tr))
+            batches_te = list(model.make_batches(x_te.shape[0], batch_size_te))
 
             for idx_tr, idx_te in zip(batches_tr, batches_te):
                 
@@ -51,13 +51,13 @@ for n in range(N):
                 y_te_b = y_te[idx_te]
                 
                 cost.append(model.train_model(x_tr_b, y_tr_b, model,
-                                              batch_size_tr, gpu))
+                                              batch_size_tr // 2, gpu))
                 with th.no_grad():
                     mi_sample.append(model.compute_mi(x_te_b, y_te_b, n_n,
-                                                      batch_size_te,
+                                                      batch_size_te // 2,
                                                       model, gpu))
                     score.append(model.predict(x_te_b, y_te_b, model,
-                                               batch_size_te, gpu))
+                                               batch_size_te // 2, gpu))
             print('Run Number: {}'.format(n), '\n',
                   'Activation function is: {}'.format(a_type[a_idx]), '\n',
                   'Epoch number: {}'.format(epoch), '\n',
@@ -71,5 +71,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/activation_results_20.npz',
+    np.savez_compressed('/root/output/iteration_results_20.npz',
                         a=mi_list, b=all_costs, c=all_scores)
