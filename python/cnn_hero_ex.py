@@ -15,7 +15,7 @@ N = 10
 batch_size_tr = 250
 batch_size_te = 100
 epochs = 150
-n_n = 20
+n_n = 40
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -25,11 +25,6 @@ a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
-x_tr = x_tr[:100]
-y_tr = y_tr[:100]
-
-x_te = x_te[:100]
-y_te = y_te[:100]
 
 for n in range(N):
 
@@ -63,5 +58,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/cnn_hero_results_20.npz',
+    np.savez_compressed('/root/output/cnn_hero_results_40.npz',
                         a=mi_list, b=all_costs, c=all_scores)
