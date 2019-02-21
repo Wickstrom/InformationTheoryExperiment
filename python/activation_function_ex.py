@@ -14,7 +14,7 @@ else:
 N = 10
 batch_size_tr = 250
 batch_size_te = 100
-epochs = 300
+epochs = 150
 n_n = 20
 
 all_costs, all_scores, mi_list = [], [], []
