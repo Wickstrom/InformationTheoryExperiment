@@ -62,8 +62,7 @@ class Network():
     def kernel_mat(self, x, n_n):
 
         d = self.dist_mat(x)
-        # sigma = th.sort(d)[0][:, n_n].mean()
-        sigma = d.mean()
+        sigma = th.sort(d)[0][:, n_n].mean()
         k = th.exp(-d ** 2 / sigma ** 2)
 
         return k / th.trace(k)
