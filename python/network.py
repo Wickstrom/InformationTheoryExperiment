@@ -11,7 +11,7 @@ class Network():
     def train_model(self, x, y, model, batch_size, gpu,
                     optimizer=th.optim.Adam):
 
-        optimizer = optimizer(model.parameters())
+        optimizer = optimizer(model.parameters(), lr=0.003)
         criterion = nn.CrossEntropyLoss()
 
         model.train()
