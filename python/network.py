@@ -44,7 +44,7 @@ class Network():
             scores.append(th.eq(batch_y, y_hat).sum().cpu().data.numpy() /
                           batch_x.shape[0])
 
-        return scores
+        return np.mean(scores)
 
     def dist_mat(self, x, y=None):
 
