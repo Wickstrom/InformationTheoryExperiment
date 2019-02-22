@@ -15,7 +15,7 @@ N = 10
 batch_size_tr = 600
 batch_size_te = 100
 epochs = 50
-n_n = 20
+n_n = 40
 mode = 'after'
 dirichlet = True
 
@@ -73,5 +73,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_20.npz',
+    np.savez_compressed('/root/output/iteration_results_40.npz',
                         a=mi_list, b=all_costs, c=all_scores)
