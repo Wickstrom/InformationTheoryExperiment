@@ -3,7 +3,7 @@ from network import Network
 
 
 class FC_Hero(nn.Module, Network):
-    def __init__(self, activation, a_type):
+    def __init__(self, activation, a_type, mode):
         super(FC_Hero, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -26,6 +26,7 @@ class FC_Hero(nn.Module, Network):
                 *([nn.Linear(20, 10)]))
 
         self.a_type = a_type
+        self.mode = mode
 
         for m in self.modules():
             self.weight_init(m)
@@ -37,10 +38,29 @@ class FC_Hero(nn.Module, Network):
         N, C, H, W = x.size()
         x = x.view(N, -1)
 
-        layer1 = self.layer1(x)
-        layer2 = self.layer2(layer1)
-        layer3 = self.layer3(layer2)
-        layer4 = self.layer4(layer3)
-        layer5 = self.layer5(layer4)
+        if self.mode == 'after':
 
-        return [layer5, layer4, layer3, layer2, layer1]
+            layer1 = self.layer1(x)
+            layer2 = self.layer2(layer1)
+            layer3 = self.layer3(layer2)
+            layer4 = self.layer4(layer3)
+            layer5 = self.layer5(layer4)
+
+            return [layer5, layer4, layer3, layer2, layer1]
+
+        elif self.mode == 'before':
+            layer1_pre = self.layer1[0](x)
+            layer1 = self.layer1[1](layer1_pre)
+            layer2_pre = self.layer2[0](layer1)
+            layer2 = self.layer2[1](layer2_pre)
+            layer3_pre = self.layer3[0](layer2)
+            layer3 = self.layer3[1](layer3_pre)
+            layer4_pre = self.layer4[0](layer3)
+            layer4 = self.layer4[1](layer4_pre)
+            layer5 = self.layer5(layer4)
+
+            return [layer5, layer4_pre, layer3_pre, layer2_pre, layer1_pre]
+
+        else:
+            print('Not implemented')
+            raise

@@ -16,6 +16,7 @@ batch_size_tr = 250
 batch_size_te = 100
 epochs = 150
 n_n = 15
+mode = 'before'
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -33,9 +34,9 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func, a_type[a_idx]).cuda()
+            model = FC_Hero(a_func, a_type[a_idx], mode).cuda()
         else:
-            model = FC_Hero(a_func, a_type[a_idx])
+            model = FC_Hero(a_func, a_type[a_idx], mode)
 
         for epoch in range(epochs):
             cost.append(model.train_model(x_tr, y_tr, model,

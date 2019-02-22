@@ -12,10 +12,11 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 1200
-batch_size_te = 200
+batch_size_tr = 600
+batch_size_te = 100
 epochs = 50
 n_n = 15
+mode = 'before'
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -25,6 +26,7 @@ a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
+
 for n in range(N):
 
     temp_cost, temp_score, temp_mi = [], [], []
@@ -33,9 +35,9 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func, a_type[a_idx]).cuda()
+            model = FC_Hero(a_func, a_type[a_idx], mode).cuda()
         else:
-            model = FC_Hero(a_func, a_type[a_idx])
+            model = FC_Hero(a_func, a_type[a_idx], mode)
 
         for epoch in range(epochs):
 
@@ -71,5 +73,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_15.npz',
+    np.savez_compressed('/root/output/iteration_results_b15.npz',
                         a=mi_list, b=all_costs, c=all_scores)
