@@ -63,7 +63,8 @@ class Network():
 
         d = self.dist_mat(x)
         sigma = th.sort(d)[0][:, n_n].mean()
-        k = th.exp(-d ** 2 / sigma ** 2)
+        gamma = 2*sigma**2
+        k = th.exp((-d ** 2) / gamma)
 
         return k / th.trace(k)
 

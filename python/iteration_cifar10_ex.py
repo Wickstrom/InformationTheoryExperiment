@@ -14,7 +14,7 @@ else:
 N = 10
 batch_size_tr = 1000
 batch_size_te = 200
-epochs = 100
+epochs = 30
 n_n = 20
 
 all_costs, all_scores, mi_list = [], [], []
@@ -53,10 +53,10 @@ for n in range(N):
                                                   model, gpu))
                 score.append(model.predict(x_te_b, y_te_b, model,
                                            batch_size_te // 2, gpu))
-            print('Run Number: {}'.format(n), '\n',
-                  'Epoch number: {}'.format(epoch), '\n',
-                  'Cost: {}'.format(cost[-1]), '\n',
-                  'Score: {}'.format(score[-1]))
+        print('Run Number: {}'.format(n), '\n',
+              'Epoch number: {}'.format(epoch), '\n',
+              'Cost: {}'.format(cost[-1]), '\n',
+              'Score: {}'.format(score[-1]))
 
     all_costs.append(cost)
     all_scores.append(score)

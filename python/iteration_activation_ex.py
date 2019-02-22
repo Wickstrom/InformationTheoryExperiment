@@ -43,13 +43,13 @@ for n in range(N):
             batches_te = list(model.make_batches(x_te.shape[0], batch_size_te))
 
             for idx_tr, idx_te in zip(batches_tr, batches_te):
-                
+
                 x_tr_b = x_tr[idx_tr]
                 y_tr_b = y_tr[idx_tr]
 
                 x_te_b = x_te[idx_te]
                 y_te_b = y_te[idx_te]
-                
+
                 cost.append(model.train_model(x_tr_b, y_tr_b, model,
                                               batch_size_tr // 2, gpu))
                 with th.no_grad():
