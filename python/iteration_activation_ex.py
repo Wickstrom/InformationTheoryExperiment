@@ -73,5 +73,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_40.npz',
+    np.savez_compressed('/root/output/iteration_results_mean.npz',
                         a=mi_list, b=all_costs, c=all_scores)
