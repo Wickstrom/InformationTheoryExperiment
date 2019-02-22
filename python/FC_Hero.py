@@ -3,7 +3,7 @@ from network import Network
 
 
 class FC_Hero(nn.Module, Network):
-    def __init__(self, activation, a_type, mode):
+    def __init__(self, activation, a_type, mode, dirichlet):
         super(FC_Hero, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -26,6 +26,7 @@ class FC_Hero(nn.Module, Network):
                 *([nn.Linear(20, 10)]))
 
         self.a_type = a_type
+        self.dirichlet = dirichlet
         self.mode = mode
 
         for m in self.modules():

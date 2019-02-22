@@ -15,8 +15,9 @@ N = 10
 batch_size_tr = 600
 batch_size_te = 100
 epochs = 50
-n_n = 15
-mode = 'before'
+n_n = 20
+mode = 'after'
+dirichlet = True
 
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
@@ -26,7 +27,6 @@ a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
-
 for n in range(N):
 
     temp_cost, temp_score, temp_mi = [], [], []
@@ -35,9 +35,9 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func, a_type[a_idx], mode).cuda()
+            model = FC_Hero(a_func, a_type[a_idx], mode, dirichlet).cuda()
         else:
-            model = FC_Hero(a_func, a_type[a_idx], mode)
+            model = FC_Hero(a_func, a_type[a_idx], mode, dirichlet)
 
         for epoch in range(epochs):
 

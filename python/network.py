@@ -3,6 +3,7 @@ import torch as th
 import numpy as np
 import torch.nn as nn
 import torch.nn.init as init
+from torch.distributions.dirichlet import Dirichlet
 
 
 class Network():
@@ -99,7 +100,10 @@ class Network():
             data.reverse()
             data[-1] = self.softmax(data[-1])
             data.insert(0, batch_x)
-            data.append(self.one_hot(batch_y, gpu))
+            if self.dirichlet:
+                data.append(self.one_hot_dirichlet(batch_y, gpu))
+            else:
+                data.append(self.one_hot(batch_y, gpu))
 
             k_list = [self.kernel_mat(i, n_n) for i in data]
             e_list = [self.entropy(i) for i in k_list]
@@ -160,3 +164,27 @@ class Network():
             else:
                 raise
                 return NotImplemented
+
+    def one_hot_dirichlet(self, y, gpu):
+
+        try:
+            y = th.from_numpy(y)
+        except TypeError:
+            None
+
+        y_1d = y
+        if gpu:
+            y_hot = th.zeros((y.size(0), th.max(y).int()+1)).cuda()
+            y_dir = th.zeros((y.size(0), th.max(y).int()+1)).cuda()
+        else:
+            y_hot = th.zeros((y.size(0), th.max(y).int()+1))
+            y_dir = th.zeros((y.size(0), th.max(y).int()+1))
+
+        for i in range(y.size(0)):
+            y_hot[i, y_1d[i].int()] = 1000000
+
+        for i in range(y.size(0)):
+            m = Dirichlet(y_hot[i] + 1000)
+            y_dir[i] = m.sample()
+
+        return y_dir
