@@ -14,7 +14,7 @@ else:
 N = 10
 batch_size_tr = 600
 batch_size_te = 100
-epochs = 50
+epochs = 25
 n_n = 40
 mode = 'after'
 dirichlet = True
