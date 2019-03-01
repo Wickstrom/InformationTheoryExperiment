@@ -3,14 +3,15 @@ import torch as th
 import numpy as np
 import torch.nn as nn
 import torch.nn.init as init
+from scipy.stats import chi2
 from torch.distributions.dirichlet import Dirichlet
 
 
 class Network():
     def train_model(self, x, y, model, batch_size, gpu,
-                    optimizer=th.optim.Adam):
+                    optimizer=th.optim.SGD):
 
-        optimizer = optimizer(model.parameters(), lr=0.003)
+        optimizer = optimizer(model.parameters(), lr=0.09)
         criterion = nn.CrossEntropyLoss()
 
         model.train()
@@ -60,30 +61,32 @@ class Network():
         dist = th.norm(x[:, None] - x, dim=2, p=2)
         return dist
 
-    def kernel_mat(self, x, n_n):
+    def kernel_mat(self, x, n_n, sigma=None):
 
         d = self.dist_mat(x)
-        sigma = th.sort(d)[0][:, n_n].mean()
-        sigma = d.mean()
-        gamma = 2*sigma**2
-        k = th.exp((-d ** 2) / gamma)
+        if sigma is None:
+            if len(x.size()) == 4:
+                dim = x.size(2)*x.size(3)
+            else:
+                dim = x.size(1)
+            sigma = th.sort(d)[0][:, n_n].mean() / np.log(chi2.ppf(q=0.05, df=dim-1))
+        else:
+            sigma = sigma
+        k = th.exp(-d ** 2 / (2*sigma ** 2))
+        return k
 
-        return k / th.trace(k)
+    def entropy(self, *args):
 
-    def entropy(self, x):
+        for idx, val in enumerate(args):
+            if idx == 0:
+                k = val.clone()
+            else:
+                k *= val
 
-        alpha = 1.01
-        eigv = th.abs(th.symeig(x)[0])
-        eig_pow = eigv**alpha
-        return (1/(1-alpha))*th.log2(eig_pow.sum())
+        k = k / k.trace()
+        eigv = th.symeig(k)[0].abs()
 
-    def j_entropy(self, x, y):
-
-        alpha = 1.01
-        k = x*y / (th.trace(x*y))
-        eigv = th.abs(th.symeig(k)[0])
-        eig_pow = eigv**alpha
-        return (1/(1-alpha))*th.log2(eig_pow.sum())
+        return -(eigv*(eigv.log2())).sum()
 
     def compute_mi(self, x, y, n_n, batch_size, model, gpu):
 
@@ -92,6 +95,7 @@ class Network():
         MI = []
 
         for idx, batch in enumerate(batches):
+
             MI_temp = []
 
             batch_x = x[batch]
@@ -101,15 +105,19 @@ class Network():
             data.reverse()
             data[-1] = self.softmax(data[-1])
             data.insert(0, batch_x)
-            if self.dirichlet:
-                data.append(self.one_hot_dirichlet(batch_y, gpu))
-            else:
-                data.append(self.one_hot(batch_y, gpu))
+            data.append(self.one_hot(batch_y, gpu))
 
-            k_list = [self.kernel_mat(i, n_n) for i in data]
+            k_list = [self.kernel_mat(data[0], n_n, sigma=10.0)]
+
+            for idx, val in enumerate(data[1:-2]):
+                k_list.append(self.kernel_mat(val, n_n))
+
+            k_list.append(self.kernel_mat(data[5], n_n, sigma=0.3))
+            k_list.append(self.kernel_mat(data[6], n_n, sigma=0.3))
+
             e_list = [self.entropy(i) for i in k_list]
-            j_XT = [self.j_entropy(k_list[0], k_i) for k_i in k_list[1:-1]]
-            j_TY = [self.j_entropy(k_i, k_list[-1]) for k_i in k_list[1:-1]]
+            j_XT = [self.entropy(k_list[0], k_i) for k_i in k_list[1:-1]]
+            j_TY = [self.entropy(k_i, k_list[-1]) for k_i in k_list[1:-1]]
 
             for idx, val in enumerate(e_list[1:-1]):
                 MI_temp.append([e_list[0].cpu().data.numpy() +

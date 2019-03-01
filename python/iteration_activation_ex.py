@@ -12,32 +12,27 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 600
-batch_size_te = 100
-epochs = 25
-n_n = 40
-mode = 'after'
-dirichlet = True
-
+batch_size_tr = 1200
+batch_size_te = 200
+epochs = 50
+n_n = 15
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
-activation_func = [nn.Sigmoid(), nn.Tanh(), nn.ReLU(),
-                   nn.LeakyReLU()]
-a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
+activation_func = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
 for n in range(N):
 
     temp_cost, temp_score, temp_mi = [], [], []
-    for a_idx, a_func in enumerate(activation_func):
+    for a_func in activation_func:
 
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func, a_type[a_idx], mode, dirichlet).cuda()
+            model = FC_Hero(a_func).cuda()
         else:
-            model = FC_Hero(a_func, a_type[a_idx], mode, dirichlet)
+            model = FC_Hero(a_func)
 
         for epoch in range(epochs):
 
@@ -61,7 +56,7 @@ for n in range(N):
                     score.append(model.predict(x_te_b, y_te_b, model,
                                                batch_size_te // 2, gpu))
             print('Run Number: {}'.format(n), '\n',
-                  'Activation function is: {}'.format(a_type[a_idx]), '\n',
+                  'Activation function is: {}'.format(a_func), '\n',
                   'Epoch number: {}'.format(epoch), '\n',
                   'Cost: {}'.format(cost[-1]), '\n',
                   'Acc: {}'.format(score[-1]))
@@ -73,5 +68,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_mean.npz',
+    np.savez_compressed('/root/output/iteration_results_15.npz',
                         a=mi_list, b=all_costs, c=all_scores)
