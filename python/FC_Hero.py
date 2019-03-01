@@ -5,6 +5,7 @@ from network import Network
 class FC_HERO(nn.Module, Network):
     def __init__(self, a_type):
         super(FC_HERO, self).__init__()
+        Network.__init__(self)
 
         self.a_type = a_type
 

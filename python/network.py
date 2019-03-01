@@ -8,6 +8,11 @@ from torch.distributions.dirichlet import Dirichlet
 
 
 class Network():
+    def __init__(self):
+
+        self.pool_layer = nn.MaxPool2d(2, 2)
+        self.softmax = nn.Softmax(dim=1)
+
     def train_model(self, x, y, model, batch_size, gpu,
                     optimizer=th.optim.SGD):
 
