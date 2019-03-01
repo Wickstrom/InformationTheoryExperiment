@@ -15,7 +15,7 @@ N = 10
 batch_size_tr = 1200
 batch_size_te = 200
 epochs = 50
-n_n = 25
+n_n = 7
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 activation_func = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
@@ -68,5 +68,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_25.npz',
+    np.savez_compressed('/root/output/iteration_results_7.npz',
                         a=mi_list, b=all_costs, c=all_scores)
