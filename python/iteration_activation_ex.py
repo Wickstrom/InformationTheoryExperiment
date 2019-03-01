@@ -2,7 +2,7 @@ import torch as th
 import numpy as np
 import torch.nn as nn
 from load_mnist import load_mnist
-from FC_Hero import FC_Hero
+from FC_Hero import FC_HERO
 
 gpu = th.cuda.is_available()
 if gpu:
@@ -30,9 +30,9 @@ for n in range(N):
         cost, score, mi_sample = [], [], []
 
         if gpu:
-            model = FC_Hero(a_func).cuda()
+            model = FC_HERO(a_func).cuda()
         else:
-            model = FC_Hero(a_func)
+            model = FC_HERO(a_func)
 
         for epoch in range(epochs):
 
