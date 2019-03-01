@@ -12,10 +12,10 @@ else:
     path = '/home/kristoffer/data/mnist/'
 
 N = 10
-batch_size_tr = 1200
+batch_size_tr = 200
 batch_size_te = 200
-epochs = 50
-n_n = 7
+epochs = 25
+n_n = 15
 all_costs, all_scores, mi_list = [], [], []
 all_scores = []
 activation_func = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
@@ -39,27 +39,29 @@ for n in range(N):
             batches_tr = list(model.make_batches(x_tr.shape[0], batch_size_tr))
             batches_te = list(model.make_batches(x_te.shape[0], batch_size_te))
 
-            for idx_tr, idx_te in zip(batches_tr, batches_te):
+            for n_tr in range(int(len(batches_tr) / len(batches_te))):
+                    for idx_tr, idx_te in zip(batches_tr[50*n_tr:50*(1+n_tr)],
+                                                         batches_te):
 
-                x_tr_b = x_tr[idx_tr]
-                y_tr_b = y_tr[idx_tr]
+                        x_tr_b = x_tr[idx_tr]
+                        y_tr_b = y_tr[idx_tr]
 
-                x_te_b = x_te[idx_te]
-                y_te_b = y_te[idx_te]
+                        x_te_b = x_te[idx_te]
+                        y_te_b = y_te[idx_te]
 
-                cost.append(model.train_model(x_tr_b, y_tr_b, model,
-                                              batch_size_tr // 2, gpu))
-                with th.no_grad():
-                    mi_sample.append(model.compute_mi(x_te_b, y_te_b, n_n,
-                                                      batch_size_te // 2,
-                                                      model, gpu))
-                    score.append(model.predict(x_te_b, y_te_b, model,
-                                               batch_size_te // 2, gpu))
-            print('Run Number: {}'.format(n), '\n',
-                  'Activation function is: {}'.format(a_func), '\n',
-                  'Epoch number: {}'.format(epoch), '\n',
-                  'Cost: {}'.format(cost[-1]), '\n',
-                  'Acc: {}'.format(score[-1]))
+                        cost.append(model.train_model(x_tr_b, y_tr_b, model,
+                                                      batch_size_tr // 2, gpu))
+                        with th.no_grad():
+                            mi_sample.append(model.compute_mi(x_te_b, y_te_b, n_n,
+                                                              batch_size_te // 2,
+                                                              model, gpu))
+                            score.append(model.predict(x_te_b, y_te_b, model,
+                                                       batch_size_te // 2, gpu))
+                    print('Run Number: {}'.format(n), '\n',
+                          'Activation function is: {}'.format(a_func), '\n',
+                          'Epoch number: {}'.format(epoch), '\n',
+                          'Cost: {}'.format(cost[-1]), '\n',
+                          'Acc: {}'.format(score[-1]))
 
         temp_cost.append(cost)
         temp_score.append(score)
@@ -68,5 +70,5 @@ for n in range(N):
     all_costs.append(temp_cost)
     mi_list.append(temp_mi)
     all_scores.append(temp_score)
-    np.savez_compressed('/root/output/iteration_results_7.npz',
+    np.savez_compressed('/root/output/iteration_results_15_n.npz',
                         a=mi_list, b=all_costs, c=all_scores)
