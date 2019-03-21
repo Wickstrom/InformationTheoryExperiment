@@ -1,8 +1,8 @@
+import random
 import torch as th
 import numpy as np
-import torch.nn as nn
-from load_mnist import load_mnist
 from CNN_Hero import CNN_Hero
+from load_mnist import load_mnist
 
 gpu = th.cuda.is_available()
 if gpu:
@@ -11,56 +11,56 @@ if gpu:
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N = 10
-batch_size_tr = 250
-batch_size_te = 100
-epochs = 150
-n_n = 40
+N = 3
+batch_size_tr = 100
+batch_size_te = 200
+epochs = 2
+tr_size = 100
+n_iterations = (tr_size // batch_size_tr)*epochs
 
-all_costs, all_scores, mi_list = [], [], []
-all_scores = []
-activation_func = [nn.Sigmoid(), nn.Tanh(), nn.ReLU(),
-                   nn.LeakyReLU()]
-a_type = ['sigmoid', 'tanh', 'relu', 'leaky_relu']
+activation = 'relu'
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
-
 for n in range(N):
+    current_iteration = 0
+    if gpu:
+        model = CNN_Hero(activation, n_iterations).cuda()
+    else:
+        model = CNN_Hero(activation, n_iterations)
 
-    temp_cost, temp_score, temp_mi = [], [], []
-    for a_idx, a_func in enumerate(activation_func):
+    for epoch in range(epochs):
 
-        cost, score, mi_sample = [], [], []
+        batches_tr = list(model.make_batches(tr_size, batch_size_tr))
 
-        if gpu:
-            model = CNN_Hero(a_func, a_type[a_idx]).cuda()
-        else:
-            model = CNN_Hero(a_func, a_type[a_idx])
+        for idx_tr in batches_tr:
 
-        for epoch in range(epochs):
-            cost.append(model.train_model(x_tr, y_tr, model,
-                                          batch_size_tr, gpu))
+            x_tr_b = x_tr[idx_tr]
+            y_tr_b = y_tr[idx_tr]
 
+            idx_te = random.sample(range(0, 10000), batch_size_te)
+
+            x_te_b = x_te[idx_te]
+            y_te_b = y_te[idx_te]
+
+            model.train_model(x_tr_b, y_tr_b, model, gpu)
             with th.no_grad():
-                mi_sample.append(model.compute_mi(x_te, y_te, n_n,
-                                                  batch_size_te,
-                                                  model, gpu))
-                score.append(model.predict(x_te, y_te, model,
-                                           batch_size_te, gpu))
+                model.predict(x_te_b, y_te_b, model, gpu)
+                model.compute_mi(x_te_b, y_te_b, model, gpu, current_iteration)
+                current_iteration += 1
 
-            print('Run Number: {}'.format(n), '\n',
-                  'Activation function is: {}'.format(a_type[a_idx]), '\n',
-                  'Epoch number: {}'.format(epoch), '\n',
-                  'Cost: {}'.format(cost[-1]), '\n',
-                  'Acc: {}'.format(score[-1]))
+        print('Run Number: {}'.format(n), '\n',
+              'Epoch number: {}'.format(epoch), '\n',
+              'Cost: {}'.format(model.cost[-1]), '\n',
+              'Acc: {}'.format(model.score[-1]))
 
-        temp_cost.append(cost)
-        temp_mi.append(mi_sample)
-        temp_score.append(score)
-
-    all_costs.append(temp_cost)
-    mi_list.append(temp_mi)
-    all_scores.append(temp_score)
-    np.savez_compressed('/root/output/cnn_hero_results_40.npz',
-                        a=mi_list, b=all_costs, c=all_scores)
+    if n == 0:
+        mi = model.MI.cpu().detach().numpy().reshape(1, n_iterations, 5, 2)
+        c_out = np.array(model.cost).reshape(1, -1)
+        s_out = np.array(model.score).reshape(1, -1)
+    else:
+        mi = np.concatenate((mi, model.MI.cpu().detach().numpy().reshape(1, n_iterations, 5, 2)))
+        c_out = np.concatenate((c_out, np.array(model.cost).reshape(1, -1)))
+        s_out = np.concatenate((s_out, np.array(model.score).reshape(1, -1)))
+    np.savez_compressed('cnn_test_relu.npz',
+                        a=mi, b=c_out, c=s_out) # /root/output/
