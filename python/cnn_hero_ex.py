@@ -6,16 +6,16 @@ from load_mnist import load_mnist
 
 gpu = th.cuda.is_available()
 if gpu:
-    th.cuda.set_device(0)
+    th.cuda.set_device(2)
     path = '/root/data/'
 else:
     path = '/home/kristoffer/data/mnist/'
 
-N = 3
+N = 10
 batch_size_tr = 100
 batch_size_te = 200
-epochs = 2
-tr_size = 100
+epochs = 10
+tr_size = 60000
 n_iterations = (tr_size // batch_size_tr)*epochs
 
 activation = 'relu'
@@ -62,5 +62,5 @@ for n in range(N):
         mi = np.concatenate((mi, model.MI.cpu().detach().numpy().reshape(1, n_iterations, 5, 2)))
         c_out = np.concatenate((c_out, np.array(model.cost).reshape(1, -1)))
         s_out = np.concatenate((s_out, np.array(model.score).reshape(1, -1)))
-    np.savez_compressed('cnn_test_relu.npz',
-                        a=mi, b=c_out, c=s_out) # /root/output/
+    np.savez_compressed('/root/output/cnn_test_relu.npz',
+                        a=mi, b=c_out, c=s_out)
