@@ -51,10 +51,10 @@ class FC_HERO(nn.Module, Network):
         self.pool = nn.MaxPool2d(2, 2)
         self.softmax = nn.Softmax(dim=1)
 
-        self.sigmas = th.zeros((7, n_iterations))
+        self.sigmas = th.zeros((7, n_iterations)).cuda()
         self.cost =  []
         self.score = []
-        self.MI = th.zeros((n_iterations, 5, 2))
+        self.MI = th.zeros((n_iterations, 5, 2)).cuda()
 
     def forward(self, x):
 
