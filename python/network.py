@@ -1,59 +1,38 @@
 import random
 import torch as th
-import numpy as np
 import torch.nn as nn
 import torch.nn.init as init
-from scipy.stats import chi2
-from torch.distributions.dirichlet import Dirichlet
 
 
 class Network():
-    def __init__(self):
-
-        self.pool_layer = nn.MaxPool2d(2, 2)
-        self.softmax = nn.Softmax(dim=1)
-
-    def train_model(self, x, y, model, batch_size, gpu,
-                    optimizer=th.optim.SGD):
+    def train_model(self, x, y, model, gpu, optimizer=th.optim.SGD):
 
         optimizer = optimizer(model.parameters(), lr=0.09)
         criterion = nn.CrossEntropyLoss()
 
         model.train()
-        cost = []
-        batches = self.make_batches(x.shape[0], batch_size)
 
-        for batch in batches:
-            optimizer.zero_grad()
-            batch_x = x[batch]
-            batch_y = y[batch]
-            output = model(batch_x)
-            loss = criterion(output[0], batch_y)
-            loss.backward()
-            optimizer.step()
-            cost.append(np.float32(loss.cpu().data))
+        optimizer.zero_grad()
+        output = model(x)
+        loss = criterion(output[0], y)
+        loss.backward()
+        optimizer.step()
 
-        return np.mean(cost)
+        self.cost.append(loss.item())
 
-    def predict(self, x, y, model, batch_size, gpu):
+        return
+
+    def predict(self, x, y, model, gpu):
 
         model.eval()
-        scores = []
-        batches = self.make_batches(x.shape[0], batch_size)
+        output = model(x)
+        y_hat = th.argmax(self.softmax(output[0]), 1)
+        score = th.eq(y, y_hat).sum().float() / x.size(0)
+        self.score.append(score.item())
 
-        for batch in batches:
+        return
 
-            batch_x = x[batch]
-            batch_y = y[batch]
-
-            output = model(batch_x)
-            y_hat = th.argmax(self.softmax(output[0]), 1)
-            scores.append(th.eq(batch_y, y_hat).sum().cpu().data.numpy() /
-                          batch_x.shape[0])
-
-        return np.mean(scores)
-
-    def dist_mat(self, x, y=None):
+    def dist_mat(self, x):
 
         try:
             x = th.from_numpy(x)
@@ -63,22 +42,8 @@ class Network():
         if len(x.size()) == 4:
             x = x.view(x.size()[0], -1)
 
-        dist = th.norm(x[:, None] - x, dim=2, p=2)
+        dist = th.norm(x[:, None] - x, dim=2)
         return dist
-
-    def kernel_mat(self, x, n_n, sigma=None):
-
-        d = self.dist_mat(x)
-        if sigma is None:
-            if len(x.size()) == 4:
-                dim = x.size(2)*x.size(3)
-            else:
-                dim = x.size(1)
-            sigma = th.sort(d)[0][:, n_n].mean() / np.log(chi2.ppf(q=0.05, df=dim-1))
-        else:
-            sigma = sigma
-        k = th.exp(-d ** 2 / (2*sigma ** 2))
-        return k
 
     def entropy(self, *args):
 
@@ -88,51 +53,101 @@ class Network():
             else:
                 k *= val
 
-        k = k / k.trace()
+        k /= k.trace()
         eigv = th.symeig(k)[0].abs()
 
         return -(eigv*(eigv.log2())).sum()
 
-    def compute_mi(self, x, y, n_n, batch_size, model, gpu):
+    def kernel_mat(self, x, k_x, k_y, sigma=None, epoch=None, idx=None):
+
+        d = self.dist_mat(x)
+        if sigma is None:
+            if epoch > 20:
+                sigma_vals = th.linspace(0.3, 10*d.mean(), 100).cuda()
+            else:
+                sigma_vals = th.linspace(0.3, 10*d.mean(), 300).cuda()
+            L = []
+            for sig in sigma_vals:
+                k_l = th.exp(-d ** 2 / (sig ** 2)) / d.size(0)
+                L.append(self.kernel_loss(k_x, k_y, k_l))
+
+            if epoch == 0:
+                self.sigmas[idx+1, epoch] = sigma_vals[L.index(max(L))]
+            else:
+                self.sigmas[idx+1, epoch] = 0.9*self.sigmas[idx+1, epoch-1] + 0.1*sigma_vals[L.index(max(L))]
+        
+            sigma = self.sigmas[idx+1, epoch]
+        return th.exp(-d ** 2 / (sigma ** 2))
+
+    def kernel_loss(self, k_x, k_y, k_l):
+
+        beta = 1.0
+
+        L = th.norm(k_l)
+        Y = th.norm(k_y) ** beta
+        X = th.norm(k_x) ** (1-beta)
+
+        LY = th.trace(th.matmul(k_l, k_y))**beta
+        LX = th.trace(th.matmul(k_l, k_x))**(1-beta)
+
+        return 2*th.log2((LY*LX)/(L*Y*X))
+
+    def compute_mi(self, x, y, model, gpu, current_iteration):
 
         model.eval()
-        batches = list(self.make_batches(x.shape[0], batch_size))
-        MI = []
 
-        for idx, batch in enumerate(batches):
+        data = self.forward(x)
+        data.reverse()
+        data[-1] = self.softmax(data[-1])
+        data.insert(0, x)
+        data.append(self.one_hot(y, gpu))
 
-            MI_temp = []
+        k_x = self.kernel_mat(data[0], [], [], sigma=th.tensor(8.0))
+        k_y = self.kernel_mat(data[-1], [], [], sigma=th.tensor(0.1))
 
-            batch_x = x[batch]
-            batch_y = y[batch]
+        k_list = [k_x]
+        for idx_l, val in enumerate(data[1:-1]):
+            k_list.append(self.kernel_mat(val.reshape(data[0].size(0), -1),
+                                          k_x, k_y, epoch=current_iteration,
+                                          idx=idx_l))
+        k_list.append(k_y)
 
-            data = self.forward(batch_x)
-            data.reverse()
-            data[-1] = self.softmax(data[-1])
-            data.insert(0, batch_x)
-            data.append(self.one_hot(batch_y, gpu))
+        e_list = [self.entropy(i) for i in k_list]
+        j_XT = [self.entropy(k_list[0], k_i) for k_i in k_list[1:-1]]
+        j_TY = [self.entropy(k_i, k_list[-1]) for k_i in k_list[1:-1]]
 
-            k_list = [self.kernel_mat(data[0], n_n, sigma=10.0)]
+        for idx_mi, val_mi in enumerate(e_list[1:-1]):
+            self.MI[current_iteration, idx_mi, 0] = e_list[0]+val_mi-j_XT[idx_mi]
+            self.MI[current_iteration, idx_mi, 1] = e_list[-1]+val_mi-j_TY[idx_mi]
 
-            for idx, val in enumerate(data[1:-2]):
-                k_list.append(self.kernel_mat(val, n_n))
+        return
 
-            k_list.append(self.kernel_mat(data[5], n_n, sigma=0.3))
-            k_list.append(self.kernel_mat(data[6], n_n, sigma=0.3))
+    def weight_init(self, m):
+        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+            if self.a_type == 'relu':
+                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'leaky_relu':
+                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'tanh':
+                g = init.calculate_gain(self.a_type)
+                init.xavier_uniform_(m.weight.data, gain=g)
+                init.constant_(m.bias.data, 0)
+            elif self.a_type == 'sigmoid':
+                g = init.calculate_gain(self.a_type)
+                init.xavier_uniform_(m.weight.data, gain=g)
+                init.constant_(m.bias.data, 0)
+            else:
+                raise
+                return NotImplemented
 
-            e_list = [self.entropy(i) for i in k_list]
-            j_XT = [self.entropy(k_list[0], k_i) for k_i in k_list[1:-1]]
-            j_TY = [self.entropy(k_i, k_list[-1]) for k_i in k_list[1:-1]]
+    def make_batches(self, N, batch_size):
 
-            for idx, val in enumerate(e_list[1:-1]):
-                MI_temp.append([e_list[0].cpu().data.numpy() +
-                                val.cpu().data.numpy() -
-                                j_XT[idx].cpu().data.numpy(),
-                                e_list[-1].cpu().data.numpy() +
-                                val.cpu().data.numpy() -
-                                j_TY[idx].cpu().data.numpy()])
-            MI.append(MI_temp)
-        return np.array(MI).mean(0)
+        idx = random.sample(range(0, N), N)
+
+        for i in range(0, N, batch_size):
+            yield idx[i:i+batch_size]
 
     def one_hot(self, y, gpu):
 
@@ -151,54 +166,3 @@ class Network():
             y_hot[i, y_1d[i].int()] = 1
 
         return y_hot
-
-    def make_batches(self, N, batch_size):
-
-        idx = random.sample(range(0, N), N)
-
-        for i in range(0, N, batch_size):
-            yield idx[i:i+batch_size]
-
-    def weight_init(self, m):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-            if self.a_type == 'relu':
-                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
-                init.constant_(m.bias.data, 0)
-            elif self.a_type == 'leaky_relu':
-                init.kaiming_normal_(m.weight.data, nonlinearity=self.a_type)
-                init.constant_(m.bias.data, 0)
-            elif self.a_type == 'tanh':
-                g = init.calculate_gain(self.a_type)
-                init.xavier_normal_(m.weight.data, gain=g)
-                init.constant_(m.bias.data, 0)
-            elif self.a_type == 'sigmoid':
-                g = init.calculate_gain(self.a_type)
-                init.xavier_normal_(m.weight.data, gain=g)
-                init.constant_(m.bias.data, 0)
-            else:
-                raise
-                return NotImplemented
-
-    def one_hot_dirichlet(self, y, gpu):
-
-        try:
-            y = th.from_numpy(y)
-        except TypeError:
-            None
-
-        y_1d = y
-        if gpu:
-            y_hot = th.zeros((y.size(0), th.max(y).int()+1)).cuda()
-            y_dir = th.zeros((y.size(0), th.max(y).int()+1)).cuda()
-        else:
-            y_hot = th.zeros((y.size(0), th.max(y).int()+1))
-            y_dir = th.zeros((y.size(0), th.max(y).int()+1))
-
-        for i in range(y.size(0)):
-            y_hot[i, y_1d[i].int()] = 1000000
-
-        for i in range(y.size(0)):
-            m = Dirichlet(y_hot[i] + 1000)
-            y_dir[i] = m.sample()
-
-        return y_dir
