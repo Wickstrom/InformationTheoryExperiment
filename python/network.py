@@ -63,9 +63,9 @@ class Network():
         d = self.dist_mat(x)
         if sigma is None:
             if epoch > 20:
-                sigma_vals = th.linspace(0.3, 10*d.mean(), 100).cuda()
+                sigma_vals = th.linspace(0.3, 10*d.mean(), 100)
             else:
-                sigma_vals = th.linspace(0.3, 10*d.mean(), 300).cuda()
+                sigma_vals = th.linspace(0.3, 10*d.mean(), 300)
             L = []
             for sig in sigma_vals:
                 k_l = th.exp(-d ** 2 / (sig ** 2)) / d.size(0)

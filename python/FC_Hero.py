@@ -1,9 +1,10 @@
+import torch as th
 import torch.nn as nn
 from network import Network
 
 
 class FC_HERO(nn.Module, Network):
-    def __init__(self, a_type):
+    def __init__(self, a_type, n_iterations):
         super(FC_HERO, self).__init__()
         Network.__init__(self)
 
@@ -46,6 +47,14 @@ class FC_HERO(nn.Module, Network):
 
         for m in self.modules():
             self.weight_init(m)
+
+        self.pool = nn.MaxPool2d(2, 2)
+        self.softmax = nn.Softmax(dim=1)
+
+        self.sigmas = th.zeros((7, n_iterations))
+        self.cost =  []
+        self.score = []
+        self.MI = th.zeros((n_iterations, 5, 2))
 
     def forward(self, x):
 
