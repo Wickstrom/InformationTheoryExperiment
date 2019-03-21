@@ -41,8 +41,8 @@ for n in range(N):
 
             idx_te = random.sample(range(0, 10000), batch_size_te)
 
-            x_te_b = x_te[idx_te]
-            y_te_b = y_te[idx_te]
+            x_te_b = x_tr_b #x_te[idx_te]
+            y_te_b = y_tr_b #y_te[idx_te]
 
             model.train_model(x_tr_b, y_tr_b, model, gpu)
             with th.no_grad():
@@ -63,5 +63,5 @@ for n in range(N):
         mi = np.concatenate((mi, model.MI.cpu().detach().numpy().reshape(1, n_iterations, 16, 2)))
         c_out = np.concatenate((c_out, np.array(model.cost).reshape(1, -1)))
         s_out = np.concatenate((s_out, np.array(model.score).reshape(1, -1)))
-    np.savez_compressed('/root/output/cifar10_vgg_test.npz',
+    np.savez_compressed('/root/output/cifar10_vgg_train.npz',
                         a=mi, b=c_out, c=s_out)
