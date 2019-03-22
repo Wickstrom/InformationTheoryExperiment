@@ -18,7 +18,7 @@ epochs = 10
 tr_size = 60000
 n_iterations = (tr_size // batch_size_tr)*epochs
 
-activation = 'tanh'
+activation = 'relu'
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
@@ -40,8 +40,8 @@ for n in range(N):
 
             idx_te = random.sample(range(0, 10000), batch_size_te)
 
-            x_te_b = x_te[idx_te]
-            y_te_b = y_te[idx_te]
+            x_te_b = x_tr_b #x_te[idx_te]
+            y_te_b = y_tr_b #y_te[idx_te]
 
             model.train_model(x_tr_b, y_tr_b, model, gpu)
             with th.no_grad():
