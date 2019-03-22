@@ -6,7 +6,7 @@ from load_mnist import load_mnist
 
 gpu = th.cuda.is_available()
 if gpu:
-    th.cuda.set_device(3)
+    th.cuda.set_device(0)
     path = '/root/data/'
 else:
     path = '/home/kristoffer/data/mnist/'
@@ -18,7 +18,7 @@ epochs = 10
 tr_size = 60000
 n_iterations = (tr_size // batch_size_tr)*epochs
 
-activation = 'tanh'
+activation = 'relu'
 
 x_tr, y_tr, x_te, y_te = load_mnist(path, gpu)
 
@@ -40,8 +40,8 @@ for n in range(N):
 
             idx_te = random.sample(range(0, 10000), batch_size_te)
 
-            x_te_b = x_te[idx_te]
-            y_te_b = y_te[idx_te]
+            x_te_b = x_tr_b #x_te[idx_te]
+            y_te_b = y_tr_b #y_te[idx_te]
 
             model.train_model(x_tr_b, y_tr_b, model, gpu)
             with th.no_grad():
@@ -62,5 +62,5 @@ for n in range(N):
         mi = np.concatenate((mi, model.MI.cpu().detach().numpy().reshape(1, n_iterations, 5, 2)))
         c_out = np.concatenate((c_out, np.array(model.cost).reshape(1, -1)))
         s_out = np.concatenate((s_out, np.array(model.score).reshape(1, -1)))
-    np.savez_compressed('/root/output/cnn_test_tanh.npz',
+    np.savez_compressed('/root/output/cnn_train_relu.npz',
                         a=mi, b=c_out, c=s_out)
